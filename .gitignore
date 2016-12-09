@@ -1,0 +1,55 @@
+# OS X
+# 
+
+.DS_Store
+
+# Xcode
+#
+
+build/
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+xcuserdata
+*.xccheckout
+*.moved-aside
+DerivedData
+*.hmap
+*.ipa
+*.dSYM.zip
+*.xcuserstate
+
+# Provisioning
+#
+
+*.mobileprovision
+
+# fastlane
+#
+# It is recommended to not store the screenshots in the git repo. Instead, use fastlane to re-generate the
+# screenshots whenever they are needed.
+# For more information about the recommended setup visit:
+# https://github.com/fastlane/fastlane/blob/master/docs/Gitignore.md
+
+fastlane/report.xml
+fastlane/README.md
+fastlane/test_output/
+fastlane/screenshots/**/*_framed.png
+
+output/
+derivedData/
+
+# documentation
+#
+
+docs/
+
+# Carthage
+#
+
+Carthage/
