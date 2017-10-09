@@ -37,11 +37,13 @@ public final class WebService {
   
   public let baseURL: URL
   public let session: Session
+  public var defaultHeaders: [String: String]? = nil
   
-  public func load<A>(_ resource: Resource<A>, completion: @escaping (Result<A>) -> Void) {
+  public func load<A>(_ resource: Resource<A>, headers: [String: String]? = nil, completion: @escaping (Result<A>) -> Void) {
     let url = URL(string: resource.path, relativeTo: baseURL)!
     var request = URLRequest(url: url)
     request.httpMethod = resource.httpMethod
+    request.allHTTPHeaderFields = requestHeaders(with: headers)
     session.dataTask(with: request) { data, _, error in
       guard let data = data else {
         if let error = error {
@@ -55,10 +57,11 @@ public final class WebService {
       }.resume()
   }
   
-  public func load<A>(_ resource: ResourceCollection<A>, completion: @escaping (Result<[A]>) -> Void) {
+  public func load<A>(_ resource: ResourceCollection<A>, headers: [String: String]? = nil, completion: @escaping (Result<[A]>) -> Void) {
     let url = URL(string: resource.path, relativeTo: baseURL)!
     var request = URLRequest(url: url)
     request.httpMethod = resource.httpMethod
+    request.allHTTPHeaderFields = requestHeaders(with: headers)
     session.dataTask(with: request) { data, _, error in
       guard let data = data else {
         if let error = error {
@@ -75,6 +78,19 @@ public final class WebService {
   public init(baseURL: URL, session: Session = URLSession.shared) {
     self.baseURL = baseURL
     self.session = session
+  }
+  
+}
+
+// MARK: - Helpers
+
+extension WebService {
+  
+  fileprivate func requestHeaders(with headers: [String: String]?) -> [String: String]? {
+    guard let headers = headers else { return defaultHeaders }
+    var requestHeaders = self.defaultHeaders ?? [:]
+    headers.forEach { (k, v) in requestHeaders[k] = v }
+    return requestHeaders
   }
   
 }

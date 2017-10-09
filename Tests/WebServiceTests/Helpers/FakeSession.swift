@@ -33,6 +33,7 @@ enum FakeSessionError: Error {
 class FakeSession: Session, FakeSessionDataTaskDelegate {
   
   var responses = [String: Any]()
+  var lastRequestHeaders: [String: String]? = nil
   
   func dataTask(with request: URLRequest, completionHandler: @escaping (Data?, URLResponse?, Error?) -> Void) -> SessionDataTask {
     let task = FakeSessionDataTask(request: request, completionHandler: completionHandler)
@@ -46,6 +47,7 @@ class FakeSession: Session, FakeSessionDataTaskDelegate {
     let key = sender.request.url!.absoluteString
     if let response = responses[sender.request.url!.absoluteString] {
       responses[key] = nil
+      lastRequestHeaders = sender.request.allHTTPHeaderFields
       sender.completionHandler(try! JSONSerialization.data(withJSONObject: response, options: []), nil, nil)
     } else {
       sender.completionHandler(nil, nil, FakeSessionError.unexpected)

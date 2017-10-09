@@ -70,7 +70,16 @@ class WebServiceTests: XCTestCase {
                       session: self.fakeSession)
   }()
   
+  override func setUp() {
+    super.setUp()
+    webservice.defaultHeaders = nil
+    fakeSession.responses = [:]
+    fakeSession.lastRequestHeaders = nil
+  }
+  
   func testAll() {
+    webservice.defaultHeaders = nil
+    
     let expected: [[String: Any]] = [
       ["id": "0", "title": "first example"],
       ["id": "1", "title": "second example"]
@@ -90,6 +99,7 @@ class WebServiceTests: XCTestCase {
       switch result {
       case .success(let actual):
         XCTAssertEqual(actual.count, expected.count)
+        XCTAssertTrue(self.fakeSession.lastRequestHeaders == nil || self.fakeSession.lastRequestHeaders!.isEmpty)
       case .error(let error):
         XCTFail(error.localizedDescription)
       }
@@ -101,6 +111,8 @@ class WebServiceTests: XCTestCase {
   }
   
   func testSpecific() {
+    webservice.defaultHeaders = nil
+    
     let id = "0"
     let title = "first example"
     
@@ -119,6 +131,137 @@ class WebServiceTests: XCTestCase {
       case .success(let example):
         XCTAssertEqual(id, example.id)
         XCTAssertEqual(title, example.title)
+        XCTAssertTrue(self.fakeSession.lastRequestHeaders == nil || self.fakeSession.lastRequestHeaders!.isEmpty)
+      case .error(let error):
+        XCTFail(error.localizedDescription)
+      }
+      
+      expectation.fulfill()
+    }
+    
+    waitForExpectations(timeout: 0.5) { XCTAssertNil($0) }
+  }
+  
+  func testDefaultHeadersResource() {
+    let headers = ["testHeader": "testValue"]
+    webservice.defaultHeaders = headers
+    
+    let expectation = self.expectation(description: "completed")
+    
+    let resource = Example.specific(with: "0")
+    
+    let expectedURL = URL(string: resource.path,
+                          relativeTo: URL(string: self.baseURLString))
+    let key = expectedURL!.absoluteString
+    
+    fakeSession.responses[key] = ["id": "0", "title": "something"]
+    
+    webservice.load(resource) { result in
+      switch result {
+      case .success(_):
+        XCTAssertNotNil(self.fakeSession.lastRequestHeaders)
+        XCTAssertEqual(headers, self.fakeSession.lastRequestHeaders!)
+      case .error(let error):
+        XCTFail(error.localizedDescription)
+      }
+      
+      expectation.fulfill()
+    }
+    
+    waitForExpectations(timeout: 0.5) { XCTAssertNil($0) }
+  }
+  
+  func testDefaultHeadersResourceCollection() {
+    let headers = ["collectionTestHeader": "collectionTestValue"]
+    webservice.defaultHeaders = headers
+    
+    let expectation = self.expectation(description: "completed")
+    
+    let resourceCollection = Example.all
+    
+    let expectedURL = URL(string: resourceCollection.path,
+                          relativeTo: URL(string: self.baseURLString))
+    let key = expectedURL!.absoluteString
+    
+    fakeSession.responses[key] = [
+      ["id": "0", "title": "first example"],
+      ["id": "1", "title": "second example"]
+    ]
+  
+    webservice.load(resourceCollection) { result in
+      switch result {
+      case .success(_):
+        XCTAssertNotNil(self.fakeSession.lastRequestHeaders)
+        XCTAssertEqual(headers, self.fakeSession.lastRequestHeaders!)
+      case .error(let error):
+        XCTFail(error.localizedDescription)
+      }
+      
+      expectation.fulfill()
+    }
+    
+    waitForExpectations(timeout: 0.5) { XCTAssertNil($0) }
+  }
+  
+  func testRequestHeadersResource() {
+    let headers = ["testHeader":        "testValue",
+                   "testRequestHeader": "this should be overwritten"]
+    webservice.defaultHeaders = headers
+    
+    let expectation = self.expectation(description: "completed")
+    
+    let resource = Example.specific(with: "0")
+    
+    let expectedURL = URL(string: resource.path,
+                          relativeTo: URL(string: self.baseURLString))
+    let key = expectedURL!.absoluteString
+    
+    fakeSession.responses[key] = ["id": "0", "title": "something"]
+    
+    let expected = ["testHeader":         "testValue",
+                    "testRequestHeader":  "testRequestValue"]
+    
+    webservice.load(resource, headers: ["testRequestHeader": "testRequestValue"]) { result in
+      switch result {
+      case .success(_):
+        XCTAssertNotNil(self.fakeSession.lastRequestHeaders)
+        XCTAssertEqual(expected, self.fakeSession.lastRequestHeaders!)
+      case .error(let error):
+        XCTFail(error.localizedDescription)
+      }
+      
+      expectation.fulfill()
+    }
+    
+    waitForExpectations(timeout: 0.5) { XCTAssertNil($0) }
+  }
+  
+  func testRequestHeadersResourceCollection() {
+    let headers = ["collectionTestHeader": "collectionTestValue",
+                   "collectionRequestTestHeader": "this should be overwritten"]
+    webservice.defaultHeaders = headers
+    
+    let expectation = self.expectation(description: "completed")
+    
+    let resourceCollection = Example.all
+    
+    let expectedURL = URL(string: resourceCollection.path,
+                          relativeTo: URL(string: self.baseURLString))
+    let key = expectedURL!.absoluteString
+    
+    fakeSession.responses[key] = [
+      ["id": "0", "title": "first example"],
+      ["id": "1", "title": "second example"]
+    ]
+    
+    let expected = ["collectionTestHeader": "collectionTestValue",
+                    "collectionRequestTestHeader": "collectionRequestTestValue"]
+    
+    webservice.load(resourceCollection, headers: ["collectionRequestTestHeader": "collectionRequestTestValue"]) { result in
+      switch result {
+      case .success(_):
+        XCTAssertNotNil(self.fakeSession.lastRequestHeaders)
+        XCTAssertEqual(expected, self.fakeSession.lastRequestHeaders!)
       case .error(let error):
         XCTFail(error.localizedDescription)
       }
