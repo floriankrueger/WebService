@@ -23,17 +23,18 @@
  */
 
 import Foundation
+import Result
 
 public struct Resource<A> {
   public let method: Method
   public let path: String
-  public let parse: (Data) -> Result<A>
+  public let parse: (Data) -> Result<A, WebServiceError>
   
   public var httpMethod: String? { return method.httpMethod }
 }
 
 public extension Resource {
-  public init(method: Method = .get, path: String, parseJSONDictionary: @escaping (JSONDictionary) -> Result<A>) {
+  public init(method: Method = .get, path: String, parseJSONDictionary: @escaping (JSONDictionary) -> Result<A, WebServiceError>) {
     self.method = method
     self.path = path
     self.parse = { data in
@@ -41,12 +42,12 @@ public extension Resource {
       do {
         json = try JSONSerialization.jsonObject(with: data, options: []) as? JSONDictionary
       } catch {
-        return .error(error)
+        return .failure(.deserializationError(error))
       }
       if let json = json {
         return parseJSONDictionary(json)
       } else {
-        return .error(WebServiceError.notADictionary)
+        return .failure(.notADictionary)
       }
     }
   }
@@ -54,11 +55,11 @@ public extension Resource {
 
 public extension Dictionary where Key: Hashable, Value: Any {
   
-  public func resourceMap<A>(_ transform: ([AnyHashable: Any]) -> A?) -> Result<A> {
+  public func resourceMap<A>(_ transform: ([AnyHashable: Any]) -> A?) -> Result<A, WebServiceError> {
     if let model = transform(self) {
       return .success(model)
     } else {
-      return .error(WebServiceError.invalidModel)
+      return .failure(.invalidModel)
     }
   }
   

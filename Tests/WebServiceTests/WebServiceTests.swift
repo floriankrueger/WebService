@@ -25,6 +25,7 @@
 import Foundation
 import XCTest
 import WebService
+import Result
 
 struct Example {
   let id: String
@@ -45,13 +46,13 @@ extension Example {
 
 extension Example {
   static var all: ResourceCollection<Example> {
-    return ResourceCollection(path: "examples") { (dict: JSONDictionary) -> Result<Example> in
+    return ResourceCollection(path: "examples") { (dict: JSONDictionary) -> Result<Example, WebServiceError> in
       return dict.resourceMap(Example.init)
     }
   }
   
   static func specific(with id: String) -> Resource<Example> {
-    return Resource(path: "examples/\(id)") { (dict: JSONDictionary) -> Result<Example> in
+    return Resource(path: "examples/\(id)") { (dict: JSONDictionary) -> Result<Example, WebServiceError> in
       return dict.resourceMap(Example.init)
     }
   }
@@ -100,7 +101,7 @@ class WebServiceTests: XCTestCase {
       case .success(let actual):
         XCTAssertEqual(actual.count, expected.count)
         XCTAssertTrue(self.fakeSession.lastRequestHeaders == nil || self.fakeSession.lastRequestHeaders!.isEmpty)
-      case .error(let error):
+      case .failure(let error):
         XCTFail(error.localizedDescription)
       }
       
@@ -132,7 +133,7 @@ class WebServiceTests: XCTestCase {
         XCTAssertEqual(id, example.id)
         XCTAssertEqual(title, example.title)
         XCTAssertTrue(self.fakeSession.lastRequestHeaders == nil || self.fakeSession.lastRequestHeaders!.isEmpty)
-      case .error(let error):
+      case .failure(let error):
         XCTFail(error.localizedDescription)
       }
       
@@ -161,7 +162,7 @@ class WebServiceTests: XCTestCase {
       case .success(_):
         XCTAssertNotNil(self.fakeSession.lastRequestHeaders)
         XCTAssertEqual(headers, self.fakeSession.lastRequestHeaders!)
-      case .error(let error):
+      case .failure(let error):
         XCTFail(error.localizedDescription)
       }
       
@@ -193,7 +194,7 @@ class WebServiceTests: XCTestCase {
       case .success(_):
         XCTAssertNotNil(self.fakeSession.lastRequestHeaders)
         XCTAssertEqual(headers, self.fakeSession.lastRequestHeaders!)
-      case .error(let error):
+      case .failure(let error):
         XCTFail(error.localizedDescription)
       }
       
@@ -226,7 +227,7 @@ class WebServiceTests: XCTestCase {
       case .success(_):
         XCTAssertNotNil(self.fakeSession.lastRequestHeaders)
         XCTAssertEqual(expected, self.fakeSession.lastRequestHeaders!)
-      case .error(let error):
+      case .failure(let error):
         XCTFail(error.localizedDescription)
       }
       
@@ -262,7 +263,7 @@ class WebServiceTests: XCTestCase {
       case .success(_):
         XCTAssertNotNil(self.fakeSession.lastRequestHeaders)
         XCTAssertEqual(expected, self.fakeSession.lastRequestHeaders!)
-      case .error(let error):
+      case .failure(let error):
         XCTFail(error.localizedDescription)
       }
       

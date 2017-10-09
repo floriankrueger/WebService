@@ -23,17 +23,18 @@
  */
 
 import Foundation
+import Result
 
 public struct ResourceCollection<A> {
   public let method: Method
   public let path: String
-  public let parse: (Data) -> Result<[A]>
+  public let parse: (Data) -> Result<[A], WebServiceError>
   
   public var httpMethod: String? { return method.httpMethod }
 }
 
 public extension ResourceCollection {
-  public init(method: Method = .get, path: String, parseJSONDictionary: @escaping (JSONDictionary) -> Result<A>) {
+  public init(method: Method = .get, path: String, parseJSONDictionary: @escaping (JSONDictionary) -> Result<A, WebServiceError>) {
     self.method = method
     self.path = path
     self.parse = { data in
@@ -41,25 +42,25 @@ public extension ResourceCollection {
       do {
         jsonObject = try JSONSerialization.jsonObject(with: data, options: [])
       } catch {
-        return .error(error)
+        return .failure(.deserializationError(error))
       }
       if let json = jsonObject as? JSONArray {
         return ResourceCollection.flatMap(json, parseJSONDictionary)
       } else {
-        return .error(WebServiceError.notAnArray(jsonObject))
+        return .failure(.notAnArray(jsonObject))
       }
     }
   }
   
-  private static func flatMap(_ array: JSONArray, _ parseJSONDictionary: @escaping (JSONDictionary) -> Result<A>) -> Result<[A]> {
+  private static func flatMap(_ array: JSONArray, _ parseJSONDictionary: @escaping (JSONDictionary) -> Result<A, WebServiceError>) -> Result<[A], WebServiceError> {
     var models: [A] = []
     
     for dictionary in array {
       switch parseJSONDictionary(dictionary) {
       case .success(let model):
         models.append(model)
-      case .error(let error):
-        return .error(error)
+      case .failure(let error):
+        return .failure(error)
       }
     }
     

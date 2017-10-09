@@ -23,6 +23,7 @@
  */
 
 import Foundation
+import Result
 
 public protocol Session {
   func dataTask(with request: URLRequest, completionHandler: @escaping (Data?, URLResponse?, Error?) -> Void) -> SessionDataTask
@@ -39,7 +40,7 @@ public final class WebService {
   public let session: Session
   public var defaultHeaders: [String: String]? = nil
   
-  public func load<A>(_ resource: Resource<A>, headers: [String: String]? = nil, completion: @escaping (Result<A>) -> Void) {
+  public func load<A>(_ resource: Resource<A>, headers: [String: String]? = nil, completion: @escaping (Result<A, WebServiceError>) -> Void) {
     let url = URL(string: resource.path, relativeTo: baseURL)!
     var request = URLRequest(url: url)
     request.httpMethod = resource.httpMethod
@@ -47,9 +48,9 @@ public final class WebService {
     session.dataTask(with: request) { data, _, error in
       guard let data = data else {
         if let error = error {
-          completion(.error(error))
+          completion(.failure(.networkError(error)))
         } else {
-          completion(.error(WebServiceError.emptyResult))
+          completion(.failure(.emptyResult))
         }
         return
       }
@@ -57,7 +58,7 @@ public final class WebService {
       }.resume()
   }
   
-  public func load<A>(_ resource: ResourceCollection<A>, headers: [String: String]? = nil, completion: @escaping (Result<[A]>) -> Void) {
+  public func load<A>(_ resource: ResourceCollection<A>, headers: [String: String]? = nil, completion: @escaping (Result<[A], WebServiceError>) -> Void) {
     let url = URL(string: resource.path, relativeTo: baseURL)!
     var request = URLRequest(url: url)
     request.httpMethod = resource.httpMethod
@@ -65,9 +66,9 @@ public final class WebService {
     session.dataTask(with: request) { data, _, error in
       guard let data = data else {
         if let error = error {
-          completion(.error(error))
+          completion(.failure(.networkError(error)))
         } else {
-          completion(.error(WebServiceError.emptyResult))
+          completion(.failure(.emptyResult))
         }
         return
       }
