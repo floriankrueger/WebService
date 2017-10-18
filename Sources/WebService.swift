@@ -45,6 +45,12 @@ public final class WebService {
     var request = URLRequest(url: url)
     request.httpMethod = resource.httpMethod
     request.allHTTPHeaderFields = requestHeaders(with: headers)
+    
+    switch resource.package() {
+    case .success(let data): request.httpBody = data
+    case .failure(let error): completion(.failure(error)); return
+    }
+    
     session.dataTask(with: request) { data, _, error in
       guard let data = data else {
         if let error = error {

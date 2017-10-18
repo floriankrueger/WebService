@@ -34,11 +34,24 @@ class FakeSession: Session, FakeSessionDataTaskDelegate {
   
   var responses = [String: Any]()
   var lastRequestHeaders: [String: String]? = nil
+  var lastRequestData: Data? = nil
+  var lastRequestJSONObject: Any? {
+    guard let data = lastRequestData else { return nil }
+    return try? JSONSerialization.jsonObject(with: data, options: [])
+  }
   
   func dataTask(with request: URLRequest, completionHandler: @escaping (Data?, URLResponse?, Error?) -> Void) -> SessionDataTask {
     let task = FakeSessionDataTask(request: request, completionHandler: completionHandler)
     task.delegate = self
     return task
+  }
+  
+  // MARK: Actions
+  
+  func reset() {
+    responses = [:]
+    lastRequestHeaders = nil
+    lastRequestData = nil
   }
 
   // MARK: FakeSessionDataTaskDelegate
@@ -48,6 +61,7 @@ class FakeSession: Session, FakeSessionDataTaskDelegate {
     if let response = responses[sender.request.url!.absoluteString] {
       responses[key] = nil
       lastRequestHeaders = sender.request.allHTTPHeaderFields
+      lastRequestData = sender.request.httpBody
       sender.completionHandler(try! JSONSerialization.data(withJSONObject: response, options: []), nil, nil)
     } else {
       sender.completionHandler(nil, nil, FakeSessionError.unexpected)

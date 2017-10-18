@@ -26,17 +26,49 @@ import Foundation
 import Result
 
 public struct Resource<A> {
+  
+  public enum Sendable {
+    case object(JSONDictionary)
+    case collection(JSONArray)
+  }
+  
+  public typealias Outgoing = (() -> Sendable)
+  public typealias Incoming = ((JSONDictionary) -> Result<A, WebServiceError>)
+  
   public let method: Method
   public let path: String
+  public let package: () -> Result<Data?, WebServiceError>
   public let parse: (Data) -> Result<A, WebServiceError>
   
   public var httpMethod: String? { return method.httpMethod }
 }
 
 public extension Resource {
-  public init(method: Method = .get, path: String, parseJSONDictionary: @escaping (JSONDictionary) -> Result<A, WebServiceError>) {
+  public init(method: Method = .get, path: String, send package: Outgoing? = nil, receive parse: @escaping Incoming) {
     self.method = method
     self.path = path
+    
+    self.package = {
+      switch package?() {
+      case .some(.object(let dictionary)):
+        do {
+          let data = try JSONSerialization.data(withJSONObject: dictionary, options: [])
+          return .success(data)
+        } catch {
+          return .failure(.serializationError(error))
+        }
+      case .some(.collection(let array)):
+        do {
+          let data = try JSONSerialization.data(withJSONObject: array, options: [])
+          return .success(data)
+        } catch {
+          return .failure(.serializationError(error))
+        }
+      default:
+        return .success(nil)
+      }
+    }
+    
     self.parse = { data in
       let json: JSONDictionary?
       do {
@@ -45,7 +77,7 @@ public extension Resource {
         return .failure(.deserializationError(error))
       }
       if let json = json {
-        return parseJSONDictionary(json)
+        return parse(json)
       } else {
         return .failure(.notADictionary)
       }
@@ -54,7 +86,6 @@ public extension Resource {
 }
 
 public extension Dictionary where Key: Hashable, Value: Any {
-  
   public func resourceMap<A>(_ transform: ([AnyHashable: Any]) -> A?) -> Result<A, WebServiceError> {
     if let model = transform(self) {
       return .success(model)

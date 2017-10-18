@@ -42,17 +42,26 @@ extension Example {
     self.id = id
     self.title = title
   }
+  
+  var toDictionary: JSONDictionary {
+    return [
+      "id": id,
+      "title": title
+    ]
+  }
 }
 
 extension Example {
   static var all: ResourceCollection<Example> {
-    return ResourceCollection(path: "examples") { (dict: JSONDictionary) -> Result<Example, WebServiceError> in
-      return dict.resourceMap(Example.init)
-    }
+    return ResourceCollection(path: "examples") { $0.resourceMap(Example.init) }
   }
   
   static func specific(with id: String) -> Resource<Example> {
-    return Resource(path: "examples/\(id)") { (dict: JSONDictionary) -> Result<Example, WebServiceError> in
+    return Resource(path: "examples/\(id)") { $0.resourceMap(Example.init) }
+  }
+  
+  func create() -> Resource<Example> {
+    return Resource(path: "examples", send: { .object(self.toDictionary) }) { (dict: JSONDictionary) -> Result<Example, WebServiceError> in
       return dict.resourceMap(Example.init)
     }
   }
@@ -74,8 +83,7 @@ class WebServiceTests: XCTestCase {
   override func setUp() {
     super.setUp()
     webservice.defaultHeaders = nil
-    fakeSession.responses = [:]
-    fakeSession.lastRequestHeaders = nil
+    fakeSession.reset()
   }
   
   func testAll() {
@@ -132,6 +140,53 @@ class WebServiceTests: XCTestCase {
       case .success(let example):
         XCTAssertEqual(id, example.id)
         XCTAssertEqual(title, example.title)
+        XCTAssertTrue(self.fakeSession.lastRequestHeaders == nil || self.fakeSession.lastRequestHeaders!.isEmpty)
+      case .failure(let error):
+        XCTFail(error.localizedDescription)
+      }
+      
+      expectation.fulfill()
+    }
+    
+    waitForExpectations(timeout: 0.5) { XCTAssertNil($0) }
+  }
+  
+  func testCreate() {
+    webservice.defaultHeaders = nil
+    
+    let id = "7"
+    let title = "The 7th Example"
+    
+    let expectation = self.expectation(description: "completed")
+    
+    let example = Example(id: id, title: title)
+    let resource = example.create()
+    
+    let expectedURL = URL(string: resource.path,
+                          relativeTo: URL(string: self.baseURLString))
+    let key = expectedURL!.absoluteString
+    
+    fakeSession.responses[key] = ["id": id, "title": title]
+    
+    webservice.load(resource) { result in
+      switch result {
+      case .success(let createdExample):
+        XCTAssertEqual(id, createdExample.id)
+        XCTAssertEqual(title, createdExample.title)
+        
+        guard
+          let actual = self.fakeSession.lastRequestJSONObject as? JSONDictionary
+          else {
+            XCTFail("expected data in session missing");
+            return
+          }
+        
+        let expected = example.toDictionary
+        
+        XCTAssertEqual(actual["id"] as! String, expected["id"] as! String)
+        XCTAssertEqual(actual["title"] as! String, expected["title"] as! String)
+        XCTAssertEqual(actual.count, expected.count)
+        
         XCTAssertTrue(self.fakeSession.lastRequestHeaders == nil || self.fakeSession.lastRequestHeaders!.isEmpty)
       case .failure(let error):
         XCTFail(error.localizedDescription)

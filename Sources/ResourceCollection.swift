@@ -26,17 +26,49 @@ import Foundation
 import Result
 
 public struct ResourceCollection<A> {
+  
+  public enum Sendable {
+    case object(JSONDictionary)
+    case collection(JSONArray)
+  }
+  
+  public typealias Outgoing = (() -> Sendable)
+  public typealias Incoming = ((JSONDictionary) -> Result<A, WebServiceError>)
+  
   public let method: Method
   public let path: String
+  public let package: () -> Result<Data?, WebServiceError>
   public let parse: (Data) -> Result<[A], WebServiceError>
   
   public var httpMethod: String? { return method.httpMethod }
 }
 
 public extension ResourceCollection {
-  public init(method: Method = .get, path: String, parseJSONDictionary: @escaping (JSONDictionary) -> Result<A, WebServiceError>) {
+  public init(method: Method = .get, path: String, send package: Outgoing? = nil, receive parse: @escaping Incoming) {
     self.method = method
     self.path = path
+    
+    self.package = {
+      switch package?() {
+      case .some(.object(let dictionary)):
+        do {
+          let data = try JSONSerialization.data(withJSONObject: dictionary, options: [])
+          return .success(data)
+        } catch {
+          return .failure(.serializationError(error))
+        }
+      case .some(.collection(let array)):
+        do {
+          let data = try JSONSerialization.data(withJSONObject: array, options: [])
+          return .success(data)
+        } catch {
+          return .failure(.serializationError(error))
+        }
+      default:
+        return .success(nil)
+      }
+    }
+    
     self.parse = { data in
       let jsonObject: Any
       do {
@@ -45,7 +77,7 @@ public extension ResourceCollection {
         return .failure(.deserializationError(error))
       }
       if let json = jsonObject as? JSONArray {
-        return ResourceCollection.flatMap(json, parseJSONDictionary)
+        return ResourceCollection.flatMap(json, parse)
       } else {
         return .failure(.notAnArray(jsonObject))
       }

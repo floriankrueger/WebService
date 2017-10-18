@@ -13,6 +13,7 @@ public enum WebServiceError: Error {
   case notADictionary
   case notAnArray(Any)
   case invalidModel
+  case serializationError(Error)
   case deserializationError(Error)
   case networkError(Error)
 }
