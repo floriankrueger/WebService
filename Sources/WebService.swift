@@ -44,12 +44,13 @@ public final class WebService {
     let url = URL(string: resource.path, relativeTo: baseURL)!
     var request = URLRequest(url: url)
     request.httpMethod = resource.httpMethod
-    request.allHTTPHeaderFields = requestHeaders(with: headers)
     
     switch resource.package() {
     case .success(let data): request.httpBody = data
     case .failure(let error): completion(.failure(error)); return
     }
+    
+    request.allHTTPHeaderFields = requestHeaders(with: headers, hasJSONData: (request.httpBody != nil))
     
     session.dataTask(with: request) { data, _, error in
       guard let data = data else {
@@ -68,7 +69,14 @@ public final class WebService {
     let url = URL(string: resource.path, relativeTo: baseURL)!
     var request = URLRequest(url: url)
     request.httpMethod = resource.httpMethod
-    request.allHTTPHeaderFields = requestHeaders(with: headers)
+    
+    switch resource.package() {
+    case .success(let data): request.httpBody = data
+    case .failure(let error): completion(.failure(error)); return
+    }
+    
+    request.allHTTPHeaderFields = requestHeaders(with: headers, hasJSONData: (request.httpBody != nil))
+    
     session.dataTask(with: request) { data, _, error in
       guard let data = data else {
         if let error = error {
@@ -93,10 +101,15 @@ public final class WebService {
 
 extension WebService {
   
-  fileprivate func requestHeaders(with headers: [String: String]?) -> [String: String]? {
+  fileprivate func requestHeaders(with headers: [String: String]?, hasJSONData: Bool) -> [String: String]? {
     guard let headers = headers else { return defaultHeaders }
     var requestHeaders = self.defaultHeaders ?? [:]
     headers.forEach { (k, v) in requestHeaders[k] = v }
+    
+    if hasJSONData {
+      requestHeaders["Content-Type"] = "application/json"
+    }
+    
     return requestHeaders
   }
   
