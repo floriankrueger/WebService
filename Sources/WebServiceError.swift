@@ -9,6 +9,7 @@
 import Foundation
 
 public enum WebServiceError: Error {
+  case missingAuthentication(String)
   case emptyResult
   case notADictionary
   case notAnArray(Any)
