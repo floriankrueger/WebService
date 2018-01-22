@@ -25,7 +25,9 @@
 import Foundation
 import Result
 
-public struct Resource<A> {
+public struct None: Encodable {}
+
+public struct Resource<O: Encodable, I: Decodable> {
   
   public enum Sendable {
     case object(JSONDictionary)
@@ -33,65 +35,39 @@ public struct Resource<A> {
   }
   
   public typealias Outgoing = (() -> Sendable)
-  public typealias Incoming = ((JSONDictionary) -> Result<A, WebServiceError>)
+  public typealias Incoming = (() -> JSONDecoder)
   
   public let method: Method
   public let path: String
   public let package: () -> Result<Data?, WebServiceError>
-  public let parse: (Data) -> Result<A, WebServiceError>
+  public let parse: (Data) -> Result<I, WebServiceError>
   
   public var httpMethod: String? { return method.httpMethod }
 }
 
 public extension Resource {
-  public init(method: Method = .get, path: String, send package: Outgoing? = nil, receive parse: @escaping Incoming) {
+  public init(method: Method = .get, path: String, send package: O? = nil, encoder: JSONEncoder = JSONEncoder(), decoder: JSONDecoder = JSONDecoder()) {
     self.method = method
     self.path = path
     
     self.package = {
-      switch package?() {
-      case .some(.object(let dictionary)):
-        do {
-          let data = try JSONSerialization.data(withJSONObject: dictionary, options: [])
-          return .success(data)
-        } catch {
-          return .failure(.serializationError(error))
-        }
-      case .some(.collection(let array)):
-        do {
-          let data = try JSONSerialization.data(withJSONObject: array, options: [])
-          return .success(data)
-        } catch {
-          return .failure(.serializationError(error))
-        }
-      default:
-        return .success(nil)
+      guard let package = package else { return .success(nil) }
+      
+      do {
+        let encoded = try encoder.encode(package)
+        return .success(encoded)
+      } catch {
+        return .failure(WebServiceError.serializationError(error))
       }
     }
     
     self.parse = { data in
-      let json: JSONDictionary?
       do {
-        json = try JSONSerialization.jsonObject(with: data, options: []) as? JSONDictionary
+        let decoded = try decoder.decode(I.self, from: data)
+        return .success(decoded)
       } catch {
-        return .failure(.deserializationError(error))
-      }
-      if let json = json {
-        return parse(json)
-      } else {
-        return .failure(.notADictionary)
+        return .failure(WebServiceError.deserializationError(error))
       }
     }
   }
-}
-
-public extension Dictionary where Key: Hashable, Value: Any {
-  public func resourceMap<A>(_ transform: ([AnyHashable: Any]) -> A?) -> Result<A, WebServiceError> {
-    if let model = transform(self) {
-      return .success(model)
-    } else {
-      return .failure(.invalidModel)
-    }
-  }
-  
 }

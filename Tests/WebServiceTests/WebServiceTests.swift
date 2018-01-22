@@ -27,43 +27,46 @@ import XCTest
 import WebService
 import Result
 
-struct Example {
+struct Example: Codable {
   let id: String
   let title: String
+  let createdAt: Date?
+}
+
+extension DateFormatter {
+  static let iso8601: DateFormatter = {
+    let formatter = DateFormatter()
+    formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZZZZZ"
+    formatter.calendar = Calendar(identifier: .iso8601)
+    formatter.timeZone = TimeZone(secondsFromGMT: 0)
+    formatter.locale = Locale(identifier: "en_US_POSIX")
+    return formatter
+  }()
 }
 
 extension Example {
-  init?(dictionary: JSONDictionary) {
-    guard
-      let id = dictionary["id"] as? String,
-      let title = dictionary["title"] as? String
-      else { return nil }
-    
-    self.id = id
-    self.title = title
+  static let decoder: JSONDecoder = {
+    let decoder = JSONDecoder()
+    decoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
+    return decoder
+  }()
+  
+  static let encoder: JSONEncoder = {
+    let encoder = JSONEncoder()
+    encoder.dateEncodingStrategy = .formatted(DateFormatter.iso8601)
+    return encoder
+  }()
+  
+  static var all: Resource<None, [Example]> {
+    return Resource(path: "examples", decoder: Example.decoder)
   }
   
-  var toDictionary: JSONDictionary {
-    return [
-      "id": id,
-      "title": title
-    ]
-  }
-}
-
-extension Example {
-  static var all: ResourceCollection<Example> {
-    return ResourceCollection(path: "examples") { $0.resourceMap(Example.init) }
+  static func specific(with id: String) -> Resource<None, Example> {
+    return Resource(path: "examples/\(id)", decoder: Example.decoder)
   }
   
-  static func specific(with id: String) -> Resource<Example> {
-    return Resource(path: "examples/\(id)") { $0.resourceMap(Example.init) }
-  }
-  
-  func create() -> Resource<Example> {
-    return Resource(path: "examples", send: { .object(self.toDictionary) }) { (dict: JSONDictionary) -> Result<Example, WebServiceError> in
-      return dict.resourceMap(Example.init)
-    }
+  func create() -> Resource<Example, Example> {
+    return Resource(path: "examples", send: self, encoder: Example.encoder, decoder: Example.decoder)
   }
 }
 
@@ -124,6 +127,7 @@ class WebServiceTests: XCTestCase {
     
     let id = "0"
     let title = "first example"
+    let createdAtString = "2014-10-23T23:10:00+01:00"
     
     let expectation = self.expectation(description: "completed")
     
@@ -133,7 +137,7 @@ class WebServiceTests: XCTestCase {
                           relativeTo: URL(string: self.baseURLString))
     let key = expectedURL!.absoluteString
     
-    fakeSession.responses[key] = ["id": id, "title": title]
+    fakeSession.responses[key] = ["id": id, "title": title, "createdAt": createdAtString]
     
     webservice.load(resource) { result in
       switch result {
@@ -141,6 +145,14 @@ class WebServiceTests: XCTestCase {
         XCTAssertEqual(id, example.id)
         XCTAssertEqual(title, example.title)
         XCTAssertTrue(self.fakeSession.lastRequestHeaders == nil || self.fakeSession.lastRequestHeaders!.isEmpty)
+        
+        XCTAssertNotNil(example.createdAt)
+        let components = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: example.createdAt!)
+        XCTAssertEqual(components.year, 2014)
+        XCTAssertEqual(components.month, 10)
+        XCTAssertEqual(components.day, 24)
+        XCTAssertEqual(components.hour, 00)
+        XCTAssertEqual(components.minute, 10)
       case .failure(let error):
         XCTFail(error.localizedDescription)
       }
@@ -156,23 +168,31 @@ class WebServiceTests: XCTestCase {
     
     let id = "7"
     let title = "The 7th Example"
+    let createdAtString = "2014-10-23T23:10:00+01:00"
     
     let expectation = self.expectation(description: "completed")
     
-    let example = Example(id: id, title: title)
+    let example = Example(id: id, title: title, createdAt: nil)
     let resource = example.create()
     
     let expectedURL = URL(string: resource.path,
                           relativeTo: URL(string: self.baseURLString))
     let key = expectedURL!.absoluteString
     
-    fakeSession.responses[key] = ["id": id, "title": title]
+    fakeSession.responses[key] = ["id": id, "title": title, "createdAt": createdAtString]
     
     webservice.load(resource) { result in
       switch result {
       case .success(let createdExample):
         XCTAssertEqual(id, createdExample.id)
         XCTAssertEqual(title, createdExample.title)
+        XCTAssertNotNil(createdExample.createdAt)
+        let components = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: createdExample.createdAt!)
+        XCTAssertEqual(components.year, 2014)
+        XCTAssertEqual(components.month, 10)
+        XCTAssertEqual(components.day, 24)
+        XCTAssertEqual(components.hour, 0)
+        XCTAssertEqual(components.minute, 10)
         
         guard
           let actual = self.fakeSession.lastRequestJSONObject as? JSONDictionary
@@ -181,7 +201,7 @@ class WebServiceTests: XCTestCase {
             return
           }
         
-        let expected = example.toDictionary
+        let expected: [AnyHashable: Any] = ["id": "7", "title": "The 7th Example"]
         
         XCTAssertEqual(actual["id"] as! String, expected["id"] as! String)
         XCTAssertEqual(actual["title"] as! String, expected["title"] as! String)

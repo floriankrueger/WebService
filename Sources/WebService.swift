@@ -40,32 +40,7 @@ public final class WebService {
   public let session: Session
   public var defaultHeaders: [String: String]? = nil
   
-  public func load<A>(_ resource: Resource<A>, headers: [String: String]? = nil, completion: @escaping (Result<A, WebServiceError>) -> Void) {
-    let url = URL(string: resource.path, relativeTo: baseURL)!
-    var request = URLRequest(url: url)
-    request.httpMethod = resource.httpMethod
-    
-    switch resource.package() {
-    case .success(let data): request.httpBody = data
-    case .failure(let error): completion(.failure(error)); return
-    }
-    
-    request.allHTTPHeaderFields = requestHeaders(with: headers, hasJSONData: (request.httpBody != nil))
-    
-    session.dataTask(with: request) { data, _, error in
-      guard let data = data else {
-        if let error = error {
-          completion(.failure(.networkError(error)))
-        } else {
-          completion(.failure(.emptyResult))
-        }
-        return
-      }
-      completion(resource.parse(data))
-      }.resume()
-  }
-  
-  public func load<A>(_ resource: ResourceCollection<A>, headers: [String: String]? = nil, completion: @escaping (Result<[A], WebServiceError>) -> Void) {
+  public func load<O, I>(_ resource: Resource<O, I>, headers: [String: String]? = nil, completion: @escaping (Result<I, WebServiceError>) -> Void) {
     let url = URL(string: resource.path, relativeTo: baseURL)!
     var request = URLRequest(url: url)
     request.httpMethod = resource.httpMethod
