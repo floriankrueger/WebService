@@ -77,9 +77,8 @@ public final class WebService {
 extension WebService {
   
   fileprivate func requestHeaders(with headers: [String: String]?, hasJSONData: Bool) -> [String: String]? {
-    guard let headers = headers else { return defaultHeaders }
     var requestHeaders = self.defaultHeaders ?? [:]
-    headers.forEach { (k, v) in requestHeaders[k] = v }
+    headers?.forEach { (k, v) in requestHeaders[k] = v }
     
     if hasJSONData {
       requestHeaders["Content-Type"] = "application/json"
