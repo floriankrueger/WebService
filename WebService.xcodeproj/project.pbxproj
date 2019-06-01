@@ -41,6 +41,9 @@
 		A53225F11DFAFCD80047ADA5 /* FakeSessionDataTask.swift in Sources */ = {isa = PBXBuildFile; fileRef = A53225F01DFAFCD80047ADA5 /* FakeSessionDataTask.swift */; };
 		A53225F21DFAFCD80047ADA5 /* FakeSessionDataTask.swift in Sources */ = {isa = PBXBuildFile; fileRef = A53225F01DFAFCD80047ADA5 /* FakeSessionDataTask.swift */; };
 		A53225F31DFAFCD80047ADA5 /* FakeSessionDataTask.swift in Sources */ = {isa = PBXBuildFile; fileRef = A53225F01DFAFCD80047ADA5 /* FakeSessionDataTask.swift */; };
+		A56807E122A278930014CA05 /* WebServiceError.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF23019E1E633DE10041E71A /* WebServiceError.swift */; };
+		A56807E222A278940014CA05 /* WebServiceError.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF23019E1E633DE10041E71A /* WebServiceError.swift */; };
+		A56807E322A278950014CA05 /* WebServiceError.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF23019E1E633DE10041E71A /* WebServiceError.swift */; };
 		DD7502881C68FEDE006590AF /* WebService.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 52D6DA0F1BF000BD002C0205 /* WebService.framework */; };
 		DD7502921C690C7A006590AF /* WebService.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 52D6D9F01BEFFFBE002C0205 /* WebService.framework */; };
 		DF2301901E633BA10041E71A /* ResourceCollection.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF23018F1E633BA10041E71A /* ResourceCollection.swift */; };
@@ -442,31 +445,31 @@
 				TargetAttributes = {
 					52D6D97B1BEFF229002C0205 = {
 						CreatedOnToolsVersion = 7.1;
-						LastSwiftMigration = 0800;
+						LastSwiftMigration = 1010;
 					};
 					52D6D9851BEFF229002C0205 = {
 						CreatedOnToolsVersion = 7.1;
-						LastSwiftMigration = 0800;
+						LastSwiftMigration = 1010;
 					};
 					52D6D9E11BEFFF6E002C0205 = {
 						CreatedOnToolsVersion = 7.1;
-						LastSwiftMigration = 0800;
+						LastSwiftMigration = 1010;
 					};
 					52D6D9EF1BEFFFBE002C0205 = {
 						CreatedOnToolsVersion = 7.1;
-						LastSwiftMigration = 0800;
+						LastSwiftMigration = 1010;
 					};
 					52D6DA0E1BF000BD002C0205 = {
 						CreatedOnToolsVersion = 7.1;
-						LastSwiftMigration = 0800;
+						LastSwiftMigration = 1010;
 					};
 					DD7502791C68FCFC006590AF = {
 						CreatedOnToolsVersion = 7.2.1;
-						LastSwiftMigration = 0800;
+						LastSwiftMigration = 1010;
 					};
 					DD75028C1C690C7A006590AF = {
 						CreatedOnToolsVersion = 7.2.1;
-						LastSwiftMigration = 0800;
+						LastSwiftMigration = 1010;
 					};
 				};
 			};
@@ -582,6 +585,7 @@
 				A53225D71DFAEFC90047ADA5 /* URLSession+WebService.swift in Sources */,
 				A53225DC1DFAF0230047ADA5 /* URLSessionDataTask+WebService.swift in Sources */,
 				DF23019C1E633DB90041E71A /* JSONArray.swift in Sources */,
+				A56807E222A278940014CA05 /* WebServiceError.swift in Sources */,
 				A53225BA1DFADCBC0047ADA5 /* WebService.swift in Sources */,
 				A53225B21DFADCBC0047ADA5 /* Resource.swift in Sources */,
 				DF2301961E633DB00041E71A /* ResourceCollection.swift in Sources */,
@@ -598,6 +602,7 @@
 				A53225D81DFAEFC90047ADA5 /* URLSession+WebService.swift in Sources */,
 				A53225DD1DFAF0230047ADA5 /* URLSessionDataTask+WebService.swift in Sources */,
 				DF23019D1E633DB90041E71A /* JSONArray.swift in Sources */,
+				A56807E322A278950014CA05 /* WebServiceError.swift in Sources */,
 				A53225BB1DFADCBC0047ADA5 /* WebService.swift in Sources */,
 				A53225B31DFADCBC0047ADA5 /* Resource.swift in Sources */,
 				DF2301971E633DB10041E71A /* ResourceCollection.swift in Sources */,
@@ -614,6 +619,7 @@
 				A53225D61DFAEFC90047ADA5 /* URLSession+WebService.swift in Sources */,
 				A53225DB1DFAF0230047ADA5 /* URLSessionDataTask+WebService.swift in Sources */,
 				DF23019B1E633DB80041E71A /* JSONArray.swift in Sources */,
+				A56807E122A278930014CA05 /* WebServiceError.swift in Sources */,
 				A53225B91DFADCBC0047ADA5 /* WebService.swift in Sources */,
 				A53225B11DFADCBC0047ADA5 /* Resource.swift in Sources */,
 				DF2301951E633DB00041E71A /* ResourceCollection.swift in Sources */,
@@ -792,7 +798,8 @@
 				PRODUCT_NAME = WebService;
 				SKIP_INSTALL = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 3.0;
+				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
+				SWIFT_VERSION = 4.2;
 			};
 			name = Debug;
 		};
@@ -814,7 +821,8 @@
 				PRODUCT_NAME = WebService;
 				SKIP_INSTALL = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
-				SWIFT_VERSION = 3.0;
+				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
+				SWIFT_VERSION = 4.2;
 			};
 			name = Release;
 		};
@@ -827,7 +835,8 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.WebService.WebService-iOS-Tests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 3.0;
+				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
+				SWIFT_VERSION = 4.2;
 			};
 			name = Debug;
 		};
@@ -840,7 +849,8 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.WebService.WebService-iOS-Tests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
-				SWIFT_VERSION = 3.0;
+				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
+				SWIFT_VERSION = 4.2;
 			};
 			name = Release;
 		};
@@ -860,7 +870,8 @@
 				PRODUCT_NAME = WebService;
 				SDKROOT = watchos;
 				SKIP_INSTALL = YES;
-				SWIFT_VERSION = 3.0;
+				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
+				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = 4;
 				WATCHOS_DEPLOYMENT_TARGET = 2.0;
 			};
@@ -883,7 +894,8 @@
 				SDKROOT = watchos;
 				SKIP_INSTALL = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
-				SWIFT_VERSION = 3.0;
+				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
+				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = 4;
 				WATCHOS_DEPLOYMENT_TARGET = 2.0;
 			};
@@ -905,7 +917,8 @@
 				PRODUCT_NAME = WebService;
 				SDKROOT = appletvos;
 				SKIP_INSTALL = YES;
-				SWIFT_VERSION = 3.0;
+				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
+				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = 3;
 				TVOS_DEPLOYMENT_TARGET = 9.0;
 			};
@@ -928,7 +941,8 @@
 				SDKROOT = appletvos;
 				SKIP_INSTALL = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
-				SWIFT_VERSION = 3.0;
+				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
+				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = 3;
 				TVOS_DEPLOYMENT_TARGET = 9.0;
 			};
@@ -953,7 +967,8 @@
 				PRODUCT_NAME = WebService;
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
-				SWIFT_VERSION = 3.0;
+				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
+				SWIFT_VERSION = 4.2;
 			};
 			name = Debug;
 		};
@@ -977,7 +992,8 @@
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
-				SWIFT_VERSION = 3.0;
+				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
+				SWIFT_VERSION = 4.2;
 			};
 			name = Release;
 		};
@@ -992,7 +1008,8 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.WebService.WebService-macOS-Tests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
-				SWIFT_VERSION = 3.0;
+				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
+				SWIFT_VERSION = 4.2;
 			};
 			name = Debug;
 		};
@@ -1008,7 +1025,8 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
-				SWIFT_VERSION = 3.0;
+				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
+				SWIFT_VERSION = 4.2;
 			};
 			name = Release;
 		};
@@ -1020,7 +1038,8 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.WebService.WebService-tvOS-Tests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = appletvos;
-				SWIFT_VERSION = 3.0;
+				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
+				SWIFT_VERSION = 4.2;
 				TVOS_DEPLOYMENT_TARGET = 9.1;
 			};
 			name = Debug;
@@ -1034,7 +1053,8 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = appletvos;
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
-				SWIFT_VERSION = 3.0;
+				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
+				SWIFT_VERSION = 4.2;
 				TVOS_DEPLOYMENT_TARGET = 9.1;
 			};
 			name = Release;
