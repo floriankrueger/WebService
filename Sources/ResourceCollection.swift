@@ -44,7 +44,8 @@ public struct ResourceCollection<A> {
 }
 
 public extension ResourceCollection {
-  public init(method: Method = .get, path: String, send package: Outgoing? = nil, receive parse: @escaping Incoming) {
+
+  init(method: Method = .get, path: String, send package: Outgoing? = nil, receive parse: @escaping Incoming) {
     self.method = method
     self.path = path
     

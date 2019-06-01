@@ -44,7 +44,7 @@ public struct Resource<A> {
 }
 
 public extension Resource {
-  public init(method: Method = .get, path: String, send package: Outgoing? = nil, receive parse: @escaping Incoming) {
+  init(method: Method = .get, path: String, send package: Outgoing? = nil, receive parse: @escaping Incoming) {
     self.method = method
     self.path = path
     
@@ -86,7 +86,7 @@ public extension Resource {
 }
 
 public extension Dictionary where Key: Hashable, Value: Any {
-  public func resourceMap<A>(_ transform: ([AnyHashable: Any]) -> A?) -> Result<A, WebServiceError> {
+  func resourceMap<A>(_ transform: ([AnyHashable: Any]) -> A?) -> Result<A, WebServiceError> {
     if let model = transform(self) {
       return .success(model)
     } else {
