@@ -33,7 +33,7 @@ public struct ResourceCollection<A> {
 }
 
 public extension ResourceCollection {
-  public init(method: Method = .get, path: String, parseJSONDictionary: @escaping (JSONDictionary) -> Result<A>) {
+  init(method: Method = .get, path: String, parseJSONDictionary: @escaping (JSONDictionary) -> Result<A>) {
     self.method = method
     self.path = path
     self.parse = { data in

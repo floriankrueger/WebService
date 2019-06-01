@@ -33,7 +33,7 @@ public struct Resource<A> {
 }
 
 public extension Resource {
-  public init(method: Method = .get, path: String, parseJSONDictionary: @escaping (JSONDictionary) -> Result<A>) {
+  init(method: Method = .get, path: String, parseJSONDictionary: @escaping (JSONDictionary) -> Result<A>) {
     self.method = method
     self.path = path
     self.parse = { data in
@@ -54,7 +54,7 @@ public extension Resource {
 
 public extension Dictionary where Key: Hashable, Value: Any {
   
-  public func resourceMap<A>(_ transform: ([AnyHashable: Any]) -> A?) -> Result<A> {
+  func resourceMap<A>(_ transform: ([AnyHashable: Any]) -> A?) -> Result<A> {
     if let model = transform(self) {
       return .success(model)
     } else {
